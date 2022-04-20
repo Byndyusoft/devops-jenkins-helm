@@ -3,7 +3,7 @@
 ## Dependencies
 * Helm
 * Helm chart repository https://github.com/jenkinsci/helm-charts/
-* Kubernetes cluster deployed with (deckhouse](https://deckhouse.io/en/)
+* Kubernetes cluster deployed with [deckhouse](https://deckhouse.io/en/)
 
 ## Steps to deploy
 
