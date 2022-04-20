@@ -1,0 +1,105 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: jenkins-test
+---
+apiVersion: deckhouse.io/v1alpha1
+kind: DexClient
+metadata:
+  name: jenkins-test
+  namespace: jenkins-test
+spec:
+  allowedGroups:
+    - Everyone
+    - admins
+    - developers
+  redirectURIs:
+    - https://jenkins-test.k8s.byndyusoft.com/securityRealm/finishLogin
+
+# Need to copy secrets for jenkins jcasc
+# clientSecret=$(kubectl get secret dex-client-jenkins-test -o jsonpath='{.data.clientSecret}' -n jenkins-test | base64 -d)
+# kubectl create secret generic dex-client-jenkins-copy --from-literal='clientsecret='$clientSecret -n jenkins-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: jenkins-test
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - statefulsets
+  - services
+  - replicationcontrollers
+  - replicasets
+  - podtemplates
+  - podsecuritypolicies
+  - pods
+  - pods/log
+  - pods/exec
+  - podpreset
+  - poddisruptionbudget
+  - persistentvolumes
+  - persistentvolumeclaims
+  - jobs
+  - endpoints
+  - deployments
+  - deployments/scale
+  - daemonsets
+  - cronjobs
+  - configmaps
+  - namespaces
+  - events
+  - secrets
+  verbs:
+  - create
+  - get
+  - watch
+  - delete
+  - list
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: jenkins-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins-test
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts:jenkins-test
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jenkins-test-tls                         # the name of the certificate; you can use it to view the cert's status
+  namespace: jenkins-test
+spec:
+  secretName: jenkins-test-tls                # the name of the secret to store a private key and a certificate
+  issuerRef:
+    kind: ClusterIssuer                      # the link to the certificate "issuer", see more below
+    name: letsencrypt
+  commonName: jenkins-test.k8s.byndyusoft.com
+  dnsNames:                                  # дополнительыне домены сертификата, указывать не обязательно
+   - jenkins-test.k8s.byndyusoft.com
