@@ -55,6 +55,7 @@ rules:
   - namespaces
   - events
   - secrets
+  - certificates
   verbs:
   - create
   - get
