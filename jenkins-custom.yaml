@@ -99,7 +99,7 @@ spec:
   secretName: jenkins-ci-tls                # the name of the secret to store a private key and a certificate
   issuerRef:
     kind: ClusterIssuer                      # the link to the certificate "issuer", see more below
-    name: letsencrypt # selfsigned - for localusage
+    name: letsencrypt # selfsigned - for local usage
   commonName: jenkins-ci.k8s.local
   dnsNames:                                  # дополнительыне домены сертификата, указывать не обязательно
    - jenkins-ci.k8s.local
