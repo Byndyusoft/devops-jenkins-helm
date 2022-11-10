@@ -68,7 +68,7 @@ controller:
   installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
-  installLatestSpecifiedPlugins: true
+  installLatestSpecifiedPlugins: false
 
   additionalExistingSecrets: 
     - name: dex-client-jenkins-copy
