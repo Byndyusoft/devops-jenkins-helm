@@ -1,24 +1,24 @@
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: jenkins-test
+  name: jenkins-ci
 ---
-apiVersion: deckhouse.io/v1alpha1
+apiVersion: deckhouse.io/v1
 kind: DexClient
 metadata:
-  name: jenkins-test
-  namespace: jenkins-test
+  name: jenkins-ci
+  namespace: jenkins-ci
 spec:
   allowedGroups:
     - Everyone
     - admins
     - developers
   redirectURIs:
-    - https://jenkins-test.k8s.byndyusoft.com/securityRealm/finishLogin
+    - https://jenkins-ci.k8s.local/securityRealm/finishLogin
 
 # Need to copy secrets for jenkins jcasc
-# clientSecret=$(kubectl get secret dex-client-jenkins-test -o jsonpath='{.data.clientSecret}' -n jenkins-test | base64 -d)
-# kubectl create secret generic dex-client-jenkins-copy --from-literal='clientsecret='$clientSecret -n jenkins-test
+# clientSecret=$(kubectl get secret dex-client-jenkins-ci -o jsonpath='{.data.clientSecret}' -n jenkins-ci | base64 -d)
+# kubectl create secret generic dex-client-jenkins-copy --from-literal='clientsecret='$clientSecret -n jenkins-ci
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -27,7 +27,7 @@ metadata:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   labels:
     kubernetes.io/bootstrapping: rbac-defaults
-  name: jenkins-test
+  name: jenkins-ci
 rules:
 - apiGroups:
   - '*'
@@ -55,7 +55,6 @@ rules:
   - namespaces
   - events
   - secrets
-  - certificates
   verbs:
   - create
   - get
@@ -81,26 +80,26 @@ metadata:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   labels:
     kubernetes.io/bootstrapping: rbac-defaults
-  name: jenkins-test
+  name: jenkins-ci
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: jenkins-test
+  name: jenkins-ci
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
-  name: system:serviceaccounts:jenkins-test
+  name: system:serviceaccounts:jenkins-ci
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: jenkins-test-tls                         # the name of the certificate; you can use it to view the cert's status
-  namespace: jenkins-test
+  name: jenkins-ci-tls                         # the name of the certificate; you can use it to view the cert's status
+  namespace: jenkins-ci
 spec:
-  secretName: jenkins-test-tls                # the name of the secret to store a private key and a certificate
+  secretName: jenkins-ci-tls                # the name of the secret to store a private key and a certificate
   issuerRef:
     kind: ClusterIssuer                      # the link to the certificate "issuer", see more below
-    name: letsencrypt
-  commonName: jenkins-test.k8s.byndyusoft.com
+    name: selfsigned # selfsigned - for local usage
+  commonName: jenkins-ci.k8s.local
   dnsNames:                                  # дополнительыне домены сертификата, указывать не обязательно
-   - jenkins-test.k8s.byndyusoft.com
+   - jenkins-ci.k8s.local

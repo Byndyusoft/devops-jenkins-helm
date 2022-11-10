@@ -1,0 +1,187 @@
+# Default values for jenkins.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+## Overrides for generated resource names from https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/values.yaml
+controller:
+  image: "jenkins/jenkins"
+  tag: "2.361.3-jdk11"
+  ingress:
+    enabled: true
+    apiVersion: "networking.k8s.io/v1"
+    labels: {}
+    annotations: {
+      kubernetes.io/ingress.class: nginx,
+      kubernetes.io/tls-acme: "true"
+      }
+    hostName: jenkins-ci.k8s.local
+    tls:
+    - secretName: jenkins-ci-tls
+      hosts:
+        - jenkins-ci.k8s.local
+  imagePullPolicy: "IfNotPresent"
+  nodeSelector: {
+        node.deckhouse.io/group: worker
+  }
+  tolerations: 
+      - effect: "NoSchedule"
+        operator: "Exists"
+        key: "node-role.kubernetes.io/worker"
+
+  installPlugins:
+    - antisamy-markup-formatter:2.7
+    - bootstrap4-api:4.6.0-3
+    - bootstrap5-api:5.1.3-6
+    - checks-api:1.7.4
+    - configuration-as-code:1559.v38a_b_2e3b_6b_b_7
+    - docker-commons:1.21
+    - docker-workflow:1.29
+    - echarts-api:5.3.3-1
+    - font-awesome-api:6.2.0-3
+    - git-server:1.11
+    - github:1.35.0
+    - github-api:1.303-400.v35c2d8258028
+    - github-branch-source:1695.v88de84e9f6b_9
+    - handlebars:3.0.8
+    - jjwt-api:0.11.5-77.v646c772fddb_0
+    - jquery3-api:3.6.1-1
+    - junit:1119.1121.vc43d0fc45561
+    - kubernetes:3718.ve44878b_12184
+    - lockable-resources:2.16
+    - matrix-auth:3.1.5
+    - matrix-project:785.v06b_7f47b_c631
+    - momentjs:1.1.1
+    - oauth-credentials:0.5
+    - oic-auth:2.0.0
+    - okhttp-api:4.9.3-108.v0feda04578cf
+    - pipeline-graph-analysis:195.v5812d95a_a_2f9
+    - pipeline-rest-api:2.27
+    - pipeline-stage-view:2.27
+    - plugin-util-api:2.17.0
+    - popper-api:1.16.1-3
+    - popper2-api:2.11.6-1
+    - thinBackup:1.10
+    - token-macro:308.v4f2b_ed62b_b_16
+
+  # Set to false to download the minimum required version of all dependencies.
+  installLatestPlugins: true
+
+  # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
+  installLatestSpecifiedPlugins: false
+
+  additionalExistingSecrets: 
+    - name: dex-client-jenkins-copy
+      keyName: clientsecret
+
+  JCasC:
+    defaultConfig: true
+    configScripts: {}
+    #  welcome-message: |
+    #    jenkins:
+    #      systemMessage: Welcome to our CI\CD server.  This Jenkins is configured and managed 'as code'.
+    # Ignored if securityRealm is defined in controller.JCasC.configScripts and
+    # ignored if controller.enableXmlConfig=true as controller.securityRealm takes precedence
+    # remotingSecurity:
+    #     enabled: true
+    securityRealm: |-
+      oic:
+        authorizationServerUrl: "https://dex.k8s.local/auth"
+        clientId: "dex-client-jenkins-ci@jenkins-ci"
+        clientSecret: "${dex-client-jenkins-copy-clientsecret}"
+        disableSslVerification: true # only for local usage
+        emailFieldName: "email"
+        escapeHatchEnabled: false
+        escapeHatchSecret: "{AQAAABAAAAAQzjnzVN+QTVWCRl5SlXGCiFmHRGhMbecQ9je9tIKJlIQ=}"
+        fullNameFieldName: "name"
+        groupsFieldName: "groups"
+        logoutFromOpenidProvider: true
+        scopes: "openid profile offline_access groups email"
+        tokenServerUrl: "https://dex.k8s.local/token"
+        userInfoServerUrl: "https://dex.k8s.local/userinfo"
+        userNameField: "sub"
+        wellKnownOpenIDConfigurationUrl: "https://dex.k8s.local/.well-known/openid-configuration"
+# Ignored if authorizationStrategy is defined in controller.JCasC.configScripts
+    authorizationStrategy: |-
+      globalMatrix:
+        permissions:
+        - "GROUP:Agent/Build:admins"
+        - "GROUP:Agent/Configure:admins"
+        - "GROUP:Agent/Connect:admins"
+        - "GROUP:Agent/Create:admins"
+        - "GROUP:Agent/Delete:admins"
+        - "GROUP:Agent/Disconnect:admins"
+        - "GROUP:Credentials/Create:admins"
+        - "GROUP:Credentials/Delete:admins"
+        - "GROUP:Credentials/ManageDomains:admins"
+        - "GROUP:Credentials/Update:admins"
+        - "GROUP:Credentials/View:admins"
+        - "GROUP:Job/Build:admins"
+        - "GROUP:Job/Build:developers"
+        - "GROUP:Job/Cancel:admins"
+        - "GROUP:Job/Cancel:developers"
+        - "GROUP:Job/Configure:admins"
+        - "GROUP:Job/Create:admins"
+        - "GROUP:Job/Delete:admins"
+        - "GROUP:Job/Discover:admins"
+        - "GROUP:Job/Move:admins"
+        - "GROUP:Job/Read:admins"
+        - "GROUP:Job/Read:developers"
+        - "GROUP:Job/Workspace:admins"
+        - "GROUP:Lockable Resources/Reserve:admins"
+        - "GROUP:Lockable Resources/Steal:admins"
+        - "GROUP:Lockable Resources/Unlock:admins"
+        - "GROUP:Lockable Resources/View:admins"
+        - "GROUP:Lockable Resources/View:developers"
+        - "GROUP:Overall/Administer:admins"
+        - "GROUP:Overall/Read:admins"
+        - "GROUP:Overall/Read:developers"
+        - "GROUP:Run/Delete:admins"
+        - "GROUP:Run/Replay:admins"
+        - "GROUP:Run/Update:admins"
+        - "GROUP:SCM/Tag:admins"
+        - "GROUP:View/Configure:admins"
+        - "GROUP:View/Configure:developers"
+        - "GROUP:View/Create:admins"
+        - "GROUP:View/Delete:admins"
+        - "GROUP:View/Read:admins"
+        - "GROUP:View/Read:developers"
+    clouds: |-
+      - kubernetes:
+          containerCap: 10
+          containerCapStr: "10"
+          jenkinsTunnel: "jenkins-agent.jenkins-ci.svc.cluster.local:50000"
+          jenkinsUrl: "http://jenkins.jenkins-ci.svc.cluster.local:8080"
+          name: "kubernetes"
+          namespace: "jenkins-ci"
+          podLabels:
+          - key: "jenkins-ci/jenkins-jenkins-agent"
+            value: "true"
+          serverUrl: "https://kubernetes.default"
+          templates:
+          - containers:
+            - args: "^${computer.jnlpmac} ^${computer.name}"
+              envVars:
+              - envVar:
+                  key: "JENKINS_URL"
+                  value: "http://jenkins-ci.jenkins-ci.svc.cluster.local:8080/"
+              image: "jenkins/inbound-agent:4.11.2-4"
+              name: "jnlp"
+              resourceLimitCpu: "512m"
+              resourceLimitMemory: "512Mi"
+              resourceRequestCpu: "512m"
+              resourceRequestMemory: "512Mi"
+              workingDir: "/home/jenkins/agent"
+            id: "15e68c1b1edf2002fb1c9a68825c6efe17fa23ec242ac11ee566813bd3c7dee5"
+            label: "jenkins-jenkins-agent"
+            name: "default"
+            nodeUsageMode: NORMAL
+            podRetention: "never"
+            serviceAccount: "default"
+            slaveConnectTimeout: 100
+            slaveConnectTimeoutStr: "100"
+            yamlMergeStrategy: "override"
+
+persistence:
+  enabled: true
+  storageClass: localpath-jenkins-ci
