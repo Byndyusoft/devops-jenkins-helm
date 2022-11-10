@@ -87,3 +87,10 @@ spec:
   groups:
     - developers
 ```
+
+
+### Roadmap
+- [x] Install via helm charts
+- [ ] Install prerequisites via helm charts
+- [x] configuration as code
+- [ ] Data backup
