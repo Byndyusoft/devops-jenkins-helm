@@ -55,6 +55,7 @@ rules:
   - namespaces
   - events
   - secrets
+  - customprometheusrules
   verbs:
   - create
   - get
